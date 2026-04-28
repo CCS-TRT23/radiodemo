@@ -1,0 +1,16 @@
+cd "C:\Users\Usuario.TRT-51503\Desktop\radio-demo"
+
+python app.py
+
+
+
+
+teste:
+
+
+Atenção, Mato Grosso! Vem aí a 7ª Corrida do Trabalho, no dia 1º de maio, em Cuiabá!
+Mais que uma corrida, um movimento por saúde, cidadania e voto livre no trabalho.
+Participe das provas de 5 e 10 quilômetros, caminhada e Corrida Kids.
+Garanta sua inscrição agora em corridadotrabalho.com.br.
+Corra por você. Corra pela democracia.
+7ª Corrida do Trabalho – Voto Livre: Corra do Assédio Eleitoral. Não fique de fora!

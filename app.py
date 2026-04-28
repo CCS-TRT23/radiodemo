@@ -1,6 +1,6 @@
 import os
 import uuid
-import requests
+from gtts import gTTS
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 
@@ -78,35 +78,19 @@ def gerar_roteiro_radio(tipo, empresa, oferta, cidade, tom, duracao, observacoes
     return " ".join(roteiro.split())
 
 
+
+
 def gerar_audio_elevenlabs(texto):
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
-
-    headers = {
-        "xi-api-key": ELEVENLABS_API_KEY,
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "text": texto,
-        "model_id": "eleven_multilingual_v2",
-        "voice_settings": {
-            "stability": 0.45,
-            "similarity_boost": 0.80
-        }
-    }
-
-    response = requests.post(url, json=payload, headers=headers, timeout=60)
-
-    if response.status_code != 200:
-        raise Exception(f"Erro ElevenLabs: {response.text}")
-
     filename = f"{uuid.uuid4()}.mp3"
     filepath = os.path.join(OUTPUT_DIR, filename)
 
-    with open(filepath, "wb") as f:
-        f.write(response.content)
+    tts = gTTS(text=texto, lang="pt")
+    tts.save(filepath)
 
     return f"/static/audios/{filename}"
+
+
+
 
 
 @app.route("/")
@@ -133,9 +117,6 @@ def gerar_roteiro():
 
 @app.route("/gerar-audio", methods=["POST"])
 def gerar_audio():
-    if not ELEVENLABS_API_KEY:
-        return jsonify({"erro": "Chave da ElevenLabs não configurada no arquivo .env"}), 500
-
     data = request.get_json()
     texto = data.get("texto", "").strip()
 
@@ -147,7 +128,6 @@ def gerar_audio():
         return jsonify({"audio_url": audio_url})
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
-
 
 if __name__ == "__main__":
     app.run(debug=True)
