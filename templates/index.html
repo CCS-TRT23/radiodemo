@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Demo IA + ElevenLabs | Rádio</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>🎙️ Demo de locução para rádio</h1>
+    <p class="sub">
+      Gere roteiro e transforme em áudio com IA
+    </p>
+
+    <section class="card">
+      <div class="grid">
+        <div>
+          <label>Tipo</label>
+          <select id="tipo">
+            <option value="promoção">Promoção</option>
+            <option value="aviso">Aviso</option>
+            <option value="vinheta">Vinheta</option>
+            <option value="institucional">Institucional</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Tom</label>
+          <select id="tom">
+            <option value="animado">Animado</option>
+            <option value="urgente">Urgente</option>
+            <option value="emocional">Emocional</option>
+            <option value="institucional">Institucional</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Duração</label>
+          <select id="duracao">
+            <option value="15">15 segundos</option>
+            <option value="30" selected>30 segundos</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Cidade</label>
+          <input id="cidade" placeholder="Cuiabá">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Empresa</label>
+        <input id="empresa" placeholder="Nome da empresa">
+      </div>
+
+      <div class="field">
+        <label>Oferta / mensagem principal</label>
+        <textarea id="oferta" placeholder="Ex: arroz 5kg por R$ 19,90 até sábado"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Observações opcionais</label>
+        <textarea id="observacoes" placeholder="Ex: endereço, telefone, horário"></textarea>
+      </div>
+
+      <div class="actions">
+        <button id="btnRoteiro">Gerar roteiro</button>
+        <button id="btnAudio" class="secondary">Gerar áudio</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <label>Roteiro gerado</label>
+      <textarea id="roteiro" class="resultado" placeholder="O roteiro aparecerá aqui"></textarea>
+    </section>
+
+    <section class="card">
+      <label>Áudio</label>
+      <audio id="player" controls style="width: 100%; display:none;"></audio>
+      <p id="status"></p>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    async function postJSON(url, payload) {
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      return resp.json();
+    }
+
+    function getFormData() {
+      return {
+        tipo: $("tipo").value,
+        empresa: $("empresa").value,
+        oferta: $("oferta").value,
+        cidade: $("cidade").value,
+        tom: $("tom").value,
+        duracao: $("duracao").value,
+        observacoes: $("observacoes").value
+      };
+    }
+
+    $("btnRoteiro").addEventListener("click", async () => {
+      $("status").textContent = "Gerando roteiro...";
+      const data = await postJSON("/gerar-roteiro", getFormData());
+      $("roteiro").value = data.roteiro || "";
+      $("status").textContent = "Roteiro gerado.";
+    });
+
+    $("btnAudio").addEventListener("click", async () => {
+      const texto = $("roteiro").value.trim();
+
+      if (!texto) {
+        $("status").textContent = "Primeiro gere o roteiro.";
+        return;
+      }
+
+      $("status").textContent = "Gerando áudio...";
+      const data = await postJSON("/gerar-audio", { texto });
+
+      if (data.erro) {
+        $("status").textContent = data.erro;
+        return;
+      }
+
+      $("player").src = data.audio_url;
+      $("player").style.display = "block";
+      $("status").textContent = "Áudio pronto.";
+    });
+  </script>
+</body>
+</html>
